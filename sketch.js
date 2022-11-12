@@ -10,17 +10,23 @@ var lives=3;
 var bulletImg,bulletGroup;
 var nz=0,nb=100;
 
+var gameState="shoot";
+
+var shootSound,killSound;
+
 
 function preload() {
-  bgImg = loadImage("assets/bg.jpeg")
-  playerImg = loadImage("assets/shooter_2.png")
-  playerShooting = loadImage("assets/shooter_3.png")
-  zombieImg = loadImage("assets/zombie.png")
-  heart1Img = loadImage("assets/heart_1.png")
-  heart2Img = loadImage("assets/heart_2.png")
-  heart3Img = loadImage("assets/heart_3.png")
-  bulletImg = loadImage ("assets/bullet.png")
+  bgImg = loadImage("assets/bg.jpeg");
+  playerImg = loadImage("assets/shooter_2.png");
+  playerShooting = loadImage("assets/shooter_3.png");
+  zombieImg = loadImage("assets/zombie.png");
+  heart1Img = loadImage("assets/heart_1.png");
+  heart2Img = loadImage("assets/heart_2.png");
+  heart3Img = loadImage("assets/heart_3.png");
+  bulletImg = loadImage ("assets/bullet.png");
 
+  shootSound=loadSound("assets/explosion.mp3");
+  killSound=loadSound("assets/lose.mp3");
 }
 
 function setup() {
@@ -58,7 +64,8 @@ function setup() {
 }
 
 function draw() {
-  background(0)
+  background(0);
+  if(gameState==="shoot"){
 
   if (keyDown(UP_ARROW)) {
     player.y = player.y - 30
@@ -78,7 +85,8 @@ function draw() {
   }
   else if (keyWentUp("space")) {
 
-    player.addImage(playerImg)
+    player.addImage(playerImg);
+    shootSound.play();
 
   }
    if (lives==3){
@@ -99,19 +107,20 @@ function draw() {
     heart1.visible=true;
    }
 
-   if (lives==0){
+   if ((lives==0)||(nb<=0)){
     heart3.visible=false;
     heart2.visible=false;
     heart1.visible=false;
+    gameState="end";
    }
 if (zombieGroup.isTouching(player)){
   for (var i=0;i<zombieGroup.length;i++ ){
     if (zombieGroup[i].isTouching(player)){
-      zombieGroup[i].destroy()
-      player.x=100
-      player.y=height-100
-      lives-=1
-
+      zombieGroup[i].destroy();
+      player.x=100;
+      player.y=height-100;
+      lives-=1;
+      killSound.play();
     }
   }
 }
@@ -130,13 +139,26 @@ if (zombieGroup.isTouching(bulletGroup)){
 
   spawnZombie()
   drawSprites()
+
+
   stroke("white")
   strokeWeight(4)
   fill("red")
   textSize(30)
   text("Zombies Killed: "+nz,width-275,150)
   text("Bullet Left: "+nb,width-275,200)
-   
+}
+if(gameState==="end")  {
+  stroke("white")
+  strokeWeight(4)
+  fill("red")
+  textSize(50)
+  text("Game Over",width/2-100,height/2);
+  text("Press r to Restart",width/2-150,height/2+100)
+if(keyDown("r")){
+  reset();
+}
+}
 
 
 }
@@ -168,4 +190,15 @@ function showbullet () {
  bullet.lifetime=800;
  bulletGroup.add(bullet);
  
+}
+
+function reset(){
+  gameState="shoot";
+  nb=100;
+  lives=3;
+  nz=0;
+  zombieGroup.destroyEach();
+  bulletGroup.destroyEach();
+  player.x=100;
+  player.y=height-100;
 }
